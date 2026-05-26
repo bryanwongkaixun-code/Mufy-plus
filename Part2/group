@@ -1,0 +1,81 @@
+import streamlit as st
+
+# Set up the page config
+st.set_page_config(page_title="Classroom Seat Booking", layout="centered")
+
+# Define classroom dimensions
+ROWS = 5
+COLS = 6
+
+# ------------------------------------------------------------------
+# 1. INITIALIZE SESSION STATE (Persists data across clicks)
+# ------------------------------------------------------------------
+if "seats" not in st.session_state:
+    # 'Available' represents an empty seat, any other string is the student's name
+    st.session_state.seats = {f"R{r}C{c}": "Available" for r in range(1, ROWS + 1) for c in range(1, COLS + 1)}
+
+# ------------------------------------------------------------------
+# 2. APP HEADER & USER INPUTS
+# ------------------------------------------------------------------
+st.title("🏫 Classroom Seat Booking System")
+st.write("Click on an **Available** seat to book it, or click a **Booked** seat to release it.")
+
+# Sidebar for user actions
+st.sidebar.header("User Panel")
+student_name = st.sidebar.text_input("Enter Student Name:", placeholder="e.g., John Doe").strip()
+
+# ------------------------------------------------------------------
+# 3. SEAT GRID DISPLAY & LOGIC
+# ------------------------------------------------------------------
+st.subheader("🪑 Seating Chart (Front of Class)")
+
+# Create columns for the visual grid
+for r in range(1, ROWS + 1):
+    cols = st.columns(COLS)
+    for c in range(1, COLS + 1):
+        seat_id = f"R{r}C{c}"
+        status = st.session_state.seats[seat_id]
+        
+        with cols[c - 1]:
+            if status == "Available":
+                # Available seat button
+                if st.button(f"🟢 {seat_id}", key=seat_id, help="Click to book", use_container_width=True):
+                    if not student_name:
+                        st.sidebar.error("⚠️ Please enter a name first!")
+                    else:
+                        st.session_state.seats[seat_id] = student_name
+                        st.toast(f"🎉 Reserved {seat_id} for {student_name}!")
+                        st.rerun()
+            else:
+                # Booked seat button
+                if st.button(f"🔴 {seat_id}", key=seat_id, help=f"Booked by: {status}\nClick to cancel", use_container_width=True):
+                    st.session_state.seats[seat_id] = "Available"
+                    st.toast(f"🔄 Released seat {seat_id}!")
+                    st.rerun()
+
+# ------------------------------------------------------------------
+# 4. LIVE DASHBOARD (Overview of current bookings)
+# ------------------------------------------------------------------
+st.markdown("---")
+st.subheader("📊 Booking Summary")
+
+booked_seats = {k: v for k, v in st.session_state.seats.items() if v != "Available"}
+
+if booked_seats:
+    # Display statistics
+    col1, col2 = st.columns(2)
+    col1.metric("Seats Booked", len(booked_seats))
+    col2.metric("Seats Available", (ROWS * COLS) - len(booked_seats))
+    
+    # Show a neat table of current occupants
+    st.write("### Current Occupants")
+    summary_data = [{"Seat": seat, "Student": name} for seat, name in booked_seats.items()]
+    st.table(summary_data)
+else:
+    st.info("The classroom is completely empty right now.")
+
+# Reset button to wipe all data
+if st.sidebar.button("🧹 Reset All Bookings", type="primary"):
+    for seat_id in st.session_state.seats:
+        st.session_state.seats[seat_id] = "Available"
+    st.rerun()

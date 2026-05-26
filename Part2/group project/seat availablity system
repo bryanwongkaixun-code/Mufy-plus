@@ -1,0 +1,108 @@
+import os
+
+class ClassroomBookingSystem:
+    def __init__(self, rows, cols):
+        self.rows = rows
+        self.cols = cols
+        # Initialize all seats as Available ('O')
+        self.seats = [['O' for _ in range(cols)] for _ in range(rows)]
+        # Dictionary to keep track of who booked which seat
+        self.bookings = {} 
+
+    def display_seats(self):
+        """Prints the current layout of the classroom."""
+        print("\n=== CLASSROOM SEATING CHART ===")
+        print("   " + " ".join([f"C{c+1:<2}" for c in range(self.cols)]))
+        print("  " + "---" * self.cols)
+        
+        for r in range(self.rows):
+            row_str = f"R{r+1:<2}|"
+            for c in range(self.cols):
+                row_str += f" {self.seats[r][c]}  "
+            print(row_str)
+        
+        print("\nLegend: [ O ] = Available  |  [ X ] = Booked")
+        print("===============================\n")
+
+    def book_seat(self, student_name, row, col):
+        """Reserves a seat if it is valid and available."""
+        # Adjusting for 0-indexed matrix
+        r, c = row - 1, col - 1 
+        
+        if not (0 <= r < self.rows and 0 <= c < self.cols):
+            print("❌ Error: Invalid seat coordinates. Please try again.")
+            return False
+
+        if self.seats[r][c] == 'X':
+            print(f"❌ Error: Seat R{row}C{col} is already taken!")
+            return False
+
+        # Book the seat
+        self.seats[r][c] = 'X'
+        self.bookings[(row, col)] = student_name
+        print(f"🎉 Success! Seat R{row}C{col} has been booked for {student_name}.")
+        return True
+
+    def cancel_booking(self, row, col):
+        """Cancels an existing booking."""
+        r, c = row - 1, col - 1
+
+        if not (0 <= r < self.rows and 0 <= c < self.cols):
+            print("❌ Error: Invalid seat coordinates.")
+            return False
+
+        if self.seats[r][c] == 'O':
+            print(f"⚠️ Warning: Seat R{row}C{col} is already empty.")
+            return False
+
+        student = self.bookings.pop((row, col), "Unknown")
+        self.seats[r][c] = 'O'
+        print(f"🔄 Success: Booking for {student} at Seat R{row}C{col} has been cancelled.")
+        return True
+
+
+def main():
+    # Create a classroom with 5 rows and 6 columns
+    classroom = ClassroomBookingSystem(rows=5, cols=6)
+    
+    while True:
+        classroom.display_seats()
+        print("--- Menu ---")
+        print("1. Book a Seat")
+        print("2. Cancel a Booking")
+        print("3. Exit")
+        
+        choice = input("Choose an option (1-3): ").strip()
+        
+        if choice == '1':
+            name = input("Enter student name: ").strip()
+            if not name:
+                print("❌ Name cannot be empty.")
+                continue
+            try:
+                row = int(input("Enter Row number: "))
+                col = int(input("Enter Column number: "))
+                classroom.book_seat(name, row, col)
+            except ValueError:
+                print("❌ Please enter valid numbers for rows and columns.")
+                
+        elif choice == '2':
+            try:
+                row = int(input("Enter Row number to cancel: "))
+                col = int(input("Enter Column number to cancel: "))
+                classroom.cancel_booking(row, col)
+            except ValueError:
+                print("❌ Please enter valid numbers.")
+                
+        elif choice == '3':
+            print("Thank you for using the Classroom Booking System. Goodbye!")
+            break
+        else:
+            print("❌ Invalid choice. Please select 1, 2, or 3.")
+        
+        input("\nPress Enter to continue...")
+        # Clears the terminal screen for a cleaner UI (optional)
+        os.system('cls' if os.name == 'nt' else 'clear') 
+
+if __name__ == "__main__":
+    main()

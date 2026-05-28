@@ -153,7 +153,7 @@ ai_prompt = st.text_input("💬 Ask about seat recommendations or layouts:", pla
 if ai_prompt:
     try:
         # 👇 🔑 PASTE YOUR ACTUAL GEMINI API KEY DIRECTLY INSIDE THE QUOTES BELOW 🔑 👇
-        MY_PRIVATE_API_KEY = "AIzaSyATAfZ5bL3YiNk00q6aqnyzOW3KOB1x6e0"
+        MY_PRIVATE_API_KEY = "AIzaSyD0Oyv9qf64B4SXEjgEwhPWvd7hILLtCCI"
         client = genai.Client(api_key=MY_PRIVATE_API_KEY)
         
         layout_context = f"""
